@@ -1,0 +1,21 @@
+# Arquivo .gitignore para projetos Python
+
+# Ambientes Virtuais
+venv/
+*.venv
+env/
+.env
+
+# Arquivos compilados do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Pastas de configuração de IDEs (opcional, mas boa prática)
+.vscode/
+.idea/
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
