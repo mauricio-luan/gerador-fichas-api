@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.schemas.DadosFicha import DadosFicha
+from app.schemas.Ficha import InputUsuario
 from app.core.logic import gera_ficha
 
 app = FastAPI(
@@ -16,6 +16,6 @@ def raiz():
 
 
 @app.post("/fichas/")
-def cria_ficha(input: DadosFicha):
+def cria_ficha(input: InputUsuario):
     response = gera_ficha(input)
     return response

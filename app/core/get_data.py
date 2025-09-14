@@ -1,7 +1,7 @@
 import requests
 
 
-def get_ticket_data(url, id_ticket, header):
+def get_ticket(url, id_ticket, header):
     try:
         response = requests.get(f"{url}{id_ticket}", headers=header)
         response.raise_for_status()
@@ -12,9 +12,9 @@ def get_ticket_data(url, id_ticket, header):
         return {"Erro": f"Erro ao obter os dados do ticket: {e}"}
 
 
-def get_customer_data(url, conta_empresa_loja, header):
+def get_customer(url, internal_id, header):
     try:
-        response = requests.get(f"{url}{conta_empresa_loja}", headers=header)
+        response = requests.get(f"{url}{internal_id}", headers=header)
         response.raise_for_status()
         customer_data = response.json()
 

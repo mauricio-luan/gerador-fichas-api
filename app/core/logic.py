@@ -1,36 +1,73 @@
 # app/core/logic.py
-from app.schemas.DadosFicha import DadosFicha
-from app.schemas.Ficha import Ficha
-from app.schemas.TicketResponse import TicketResponse
-from app.schemas.CustomerResponse import CustomerResponse
-from app.core.get_data import get_ticket_data, get_customer_data
+import datetime
+from app.core.get_data import get_ticket, get_customer
 from app.core.load_env import load_env
+from app.schemas.Ficha import InputUsuario, Ficha
+from app.schemas.CustomerResponse import CustomerResponse
+from app.schemas.TicketResponse import TicketResponse
 
 
-def gera_ficha(dados: DadosFicha):
-    ID = dados.id
-    # TERMINAIS = dados.terminais
-    # SC = dados.sc
-
+def gera_ficha(input_usuario: InputUsuario) -> Ficha:
     CUSTOMER_URL, TICKET_URL, HEADER = load_env()
 
-    ticket_data = get_ticket_data(TICKET_URL, ID, HEADER)
-    ticket = TicketResponse.model_validate(ticket_data)
-    conta_empresa_loja = ticket.data.customer.internal_id
+    ticket = TicketResponse.model_validate(
+        get_ticket(TICKET_URL, input_usuario.id, HEADER)
+    )
 
-    customer_data = get_customer_data(CUSTOMER_URL, conta_empresa_loja, HEADER)
-    customer = CustomerResponse.model_validate(customer_data)
+    customer = CustomerResponse.model_validate(
+        get_customer(CUSTOMER_URL, ticket.data.customer.internal_id, HEADER)
+    )
 
-    ficha = monta_ficha(ticket, customer)
+    return monta_ficha(
+        ticket,
+        customer,
+        input_usuario.terminais,
+        input_usuario.sc,
+    )
 
-    return ficha
+
+def monta_ficha(
+    ticket: TicketResponse,
+    customer: CustomerResponse,
+    terminais: int,
+    servico_cartao: str,
+) -> Ficha:
+    chamado = ticket.data.protocol
+    razao_social = customer.data[0].name
+
+    # Captura das informações do customer
+    custom_fields = customer.data[0].custom_fields
+    mapa = {campo.name: campo.value for campo in custom_fields}
+
+    internal_id = customer.data[0].internal_id
+    conta, empresa, loja = internal_id.split("-")
+    tokens = get_tokens(internal_id, terminais)
+
+    # retornar aqui depois a funcao de criação da plnilha
+    return Ficha(
+        chamado=f"{chamado} - {datetime.datetime.now().strftime("%d/%m/%Y")}",
+        nome_fantasia=mapa.get("Nome Fantasia").strip(),
+        razao_social=razao_social.strip(),
+        cnpj=mapa.get("CNPJ").strip(),
+        endereco=f"{mapa.get('Endereco')}, {mapa.get('Numero')}".upper(),
+        bairro=mapa.get("Bairro").upper().strip(),
+        cidade=mapa.get("Cidade").upper().strip(),
+        contato=mapa.get("COMERCIAL - Contato").upper().strip(),
+        telefone=mapa.get("COMERCIAL - Telefone").strip(),
+        email=mapa.get("COMERCIAL - E-mail").strip(),
+        account=f"{conta} - {razao_social}".strip(),
+        company=f"{empresa} - {razao_social}".strip(),
+        store=f"{loja} - {mapa.get('Nome Fantasia')}".strip(),
+        token=" / ".join(tokens),
+        servico_cartao=servico_cartao.strip(),
+    )
 
 
-def monta_ficha(ticket: TicketResponse, customer: CustomerResponse) -> Ficha:
-    protocol = ticket.data.protocol
-    interal_id = ticket.data.customer.internal_id
-    name = customer.data.name
+def get_tokens(internal_id: str, terminais: int) -> list[str]:
+    partes = internal_id.split("-")
+    tokens = []
 
-    ficha = Ficha(chamado=protocol, account_company_store=interal_id, razao_social=name)
+    for i in range(1, int(terminais) + 1):
+        tokens.append(f"{partes[1]}{partes[2]}{str(i).zfill(2)}")
 
-    return ficha
+    return tokens
