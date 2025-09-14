@@ -1,10 +1,10 @@
 from fastapi import FastAPI
-from app.schemas import DadosFicha
+from app.schemas.DadosFicha import DadosFicha
 from app.core.logic import gera_ficha
 
 app = FastAPI(
     title="Gerador de Fichas Online",
-    description="Esta API oferece a funcionalidade de criação de Ficha de Implantação, para os Analistas da Payer, por meio de uma página Web.",
+    description="Oferece a funcionalidade de criação de Ficha de Implantação via web.",
     version="0.1.0",
 )
 

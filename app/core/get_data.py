@@ -9,20 +9,7 @@ def get_ticket_data(url, id_ticket, header):
 
         return ticket_data
     except requests.exceptions.RequestException as e:
-        # print(f"Erro ao obter dados do chamado: {e}")
-        return None, None
-
-
-def get_conta_empresa_loja(ticket_data):
-    try:
-        if not ticket_data:
-            raise Exception(f"Param: {ticket_data} está vazio")
-
-        conta_empresa_loja = ticket_data["data"]["customer"]["internal_id"]
-
-        return conta_empresa_loja
-    except Exception as e:
-        print(f"Erro: {e}")
+        return {"Erro": f"Erro ao obter os dados do ticket: {e}"}
 
 
 def get_customer_data(url, conta_empresa_loja, header):
@@ -33,5 +20,4 @@ def get_customer_data(url, conta_empresa_loja, header):
 
         return customer_data
     except requests.exceptions.RequestException as e:
-        # print(f"Erro ao obter dados do cliente: {e}")
-        return None
+        return {"Erro": f"Erro ao obter os dados do customer: {e}"}
