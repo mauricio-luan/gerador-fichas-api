@@ -1,15 +1,16 @@
-# app/schemas/TicketResponse.py
-#
-# Essas classes representam a estrutura da resposta
-# a requisição do ticket, na api do Tomticket:
-# {
-#    "data": {
-#        "protocol": 12345,
-#        "customer": {
-#            "internal_id": "008649-003798-0001",
-#        },
-#    }
-# }
+"""
+ Essas classes representam a estrutura da resposta
+ a requisição do ticket, na api do Tomticket:
+ {
+    "data": {
+        "protocol": 12345,
+        "customer": {
+            "internal_id": "008649-003798-0001",
+        },
+    }
+}
+"""
+
 from pydantic import BaseModel
 
 

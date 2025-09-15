@@ -4,19 +4,21 @@ from typing import Optional
 
 class InputUsuario(BaseModel):
     """
-    Essas três propriedades virão do front-end, onde o analista as inserirá.
+    Representa as três propriedades que serão passadas pelo usuário lá no front.
 
     id: Id do chamado no Tomticket\n
     terminais: Quantidade de terminais para o cliente\n
-    sc: Serviço de Cartão a ser configurado
+    servico_cartao: Qual o serviço de cartão a ser configurado para o cliente
     """
 
     id: str
     terminais: int
-    sc: str
+    servico_cartao: str
 
 
 class Ficha(BaseModel):
+    """Representa a ficha de implantação."""
+
     chamado: str
     nome_fantasia: str
     razao_social: str

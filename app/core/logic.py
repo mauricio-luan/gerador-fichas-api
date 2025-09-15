@@ -22,7 +22,7 @@ def gera_ficha(input_usuario: InputUsuario) -> Ficha:
         ticket,
         customer,
         input_usuario.terminais,
-        input_usuario.sc,
+        input_usuario.servico_cartao,
     )
 
 
@@ -34,33 +34,56 @@ def monta_ficha(
 ) -> Ficha:
     chamado = ticket.data.protocol
     razao_social = customer.data[0].name
-
-    # Captura das informações do customer
-    custom_fields = customer.data[0].custom_fields
-    mapa = {campo.name: campo.value for campo in custom_fields}
-
     internal_id = customer.data[0].internal_id
     conta, empresa, loja = internal_id.split("-")
     tokens = get_tokens(internal_id, terminais)
 
-    # retornar aqui depois a funcao de criação da plnilha
-    return Ficha(
+    custom_fields = customer.data[0].custom_fields
+    colunas = {campo.name: campo.value for campo in custom_fields}
+
+    ficha = Ficha(
         chamado=f"{chamado} - {datetime.datetime.now().strftime("%d/%m/%Y")}",
-        nome_fantasia=mapa.get("Nome Fantasia").strip(),
+        nome_fantasia=colunas.get("Nome Fantasia").strip(),
         razao_social=razao_social.strip(),
-        cnpj=mapa.get("CNPJ").strip(),
-        endereco=f"{mapa.get('Endereco')}, {mapa.get('Numero')}".upper(),
-        bairro=mapa.get("Bairro").upper().strip(),
-        cidade=mapa.get("Cidade").upper().strip(),
-        contato=mapa.get("COMERCIAL - Contato").upper().strip(),
-        telefone=mapa.get("COMERCIAL - Telefone").strip(),
-        email=mapa.get("COMERCIAL - E-mail").strip(),
+        cnpj=colunas.get("CNPJ").strip(),
+        endereco=(
+            f"{colunas.get('Endereco')}, {colunas.get('Numero')}".upper()
+            if colunas.get("Endereco") or colunas.get("Numero")
+            else "ENDERECO NAO INFORMADO"
+        ),
+        bairro=(
+            colunas.get("Bairro").upper().strip()
+            if colunas.get("Bairro")
+            else "BAIRRO NAO INFORMADO"
+        ),
+        cidade=(
+            colunas.get("Cidade").upper().strip()
+            if colunas.get("Cidade")
+            else "CIDADE NAO INFORMADA"
+        ),
+        contato=(
+            colunas.get("COMERCIAL - Contato").upper().strip()
+            if colunas.get("COMERCIAL - Contato")
+            else "CONTATO NAO INFORMADO"
+        ),
+        telefone=(
+            colunas.get("COMERCIAL - Telefone").strip()
+            if colunas.get("COMERCIAL - Telefone")
+            else "TELEFONE NAO INFORMADO"
+        ),
+        email=(
+            colunas.get("COMERCIAL - E-mail").strip()
+            if colunas.get("COMERCIAL - E-mail")
+            else "EMAIL NAO INFORMADO"
+        ),
         account=f"{conta} - {razao_social}".strip(),
         company=f"{empresa} - {razao_social}".strip(),
-        store=f"{loja} - {mapa.get('Nome Fantasia')}".strip(),
+        store=f"{loja} - {colunas.get('Nome Fantasia')}".strip(),
         token=" / ".join(tokens),
         servico_cartao=servico_cartao.strip(),
     )
+
+    return ficha
 
 
 def get_tokens(internal_id: str, terminais: int) -> list[str]:
