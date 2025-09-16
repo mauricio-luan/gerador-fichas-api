@@ -20,14 +20,17 @@ __version__ = "0.1.0"
 __email__ = "mauricioluan2023@exemplo.com"
 __status__ = "Development"
 
-
-from app.schemas.Ficha import InputUsuario
-from app.core.exceptions import TomticketApiError
-from app.core.logic import gera_ficha
-from app.core.gera_xlsx import gera_planilha
+import io
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
-import io
+from app.schemas.Ficha import InputUsuario
+from app.core.gera_xlsx import gera_planilha
+from app.core.logic import gera_ficha
+from app.core.exceptions import (
+    TomticketApiError,
+    TicketNotFountError,
+    AuthenticationError,
+)
 
 app = FastAPI(
     title="API Gerador de Fichas",
@@ -58,8 +61,15 @@ def cria_ficha(input_usuario: InputUsuario):
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             headers={"Content-Disposition": f"attachment; filename={nome_arquivo}"},
         )
-    except TomticketApiError as e:
+    except TicketNotFountError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+    except AuthenticationError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+    except TomticketApiError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
     except Exception as e:
-        print(f"Erro inesperado: {e}")
+        print(f"ERRO INTERNO DO SERVIDOR: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")

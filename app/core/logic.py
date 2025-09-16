@@ -1,4 +1,3 @@
-# app/core/logic.py
 import datetime
 from app.core.get_data import get_ticket, get_customer
 from app.core.load_env import load_env
@@ -13,7 +12,6 @@ def gera_ficha(input_usuario: InputUsuario) -> Ficha:
     ticket = TicketResponse.model_validate(
         get_ticket(TICKET_URL, input_usuario.id, HEADER)
     )
-
     customer = CustomerResponse.model_validate(
         get_customer(CUSTOMER_URL, ticket.data.customer.internal_id, HEADER)
     )
@@ -21,22 +19,20 @@ def gera_ficha(input_usuario: InputUsuario) -> Ficha:
     return monta_ficha(
         ticket,
         customer,
-        input_usuario.terminais,
-        input_usuario.servico_cartao,
+        input_usuario,
     )
 
 
 def monta_ficha(
     ticket: TicketResponse,
     customer: CustomerResponse,
-    terminais: int,
-    servico_cartao: str,
+    input_usuario: InputUsuario,
 ) -> Ficha:
     chamado = ticket.data.protocol
     razao_social = customer.data[0].name
     internal_id = customer.data[0].internal_id
     conta, empresa, loja = internal_id.split("-")
-    tokens = get_tokens(internal_id, terminais)
+    tokens = get_tokens(internal_id, input_usuario.terminais)
 
     custom_fields = customer.data[0].custom_fields
     colunas = {campo.name: campo.value for campo in custom_fields}
@@ -80,7 +76,7 @@ def monta_ficha(
         company=f"{empresa} - {razao_social}".strip(),
         store=f"{loja} - {colunas.get('Nome Fantasia')}".strip(),
         token=" / ".join(tokens),
-        servico_cartao=servico_cartao.strip(),
+        servico_cartao=input_usuario.servico_cartao.strip(),
     )
 
     return ficha

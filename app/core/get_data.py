@@ -1,5 +1,9 @@
 import requests
-from app.core.exceptions import TomticketApiError
+from app.core.exceptions import (
+    TomticketApiError,
+    TicketNotFountError,
+    AuthenticationError,
+)
 
 
 def get_ticket(url, id_ticket, header):
@@ -9,9 +13,11 @@ def get_ticket(url, id_ticket, header):
         return response.json()
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 404:
-            raise TomticketApiError(f"Ticket {id_ticket} nao encontrado.")
+            raise TicketNotFountError(f"Ticket '{id_ticket}' nao encontrado.")
+        elif e.response.status_code == 401:
+            raise AuthenticationError("Token de autenticacao invalido.")
         else:
-            raise TomticketApiError(f"Erro ao obter os dados do ticket: {id_ticket}")
+            raise TomticketApiError(f"Erro inesperado: {e.response.status_code}")
 
 
 def get_customer(url, internal_id, header):
@@ -19,5 +25,8 @@ def get_customer(url, internal_id, header):
         response = requests.get(f"{url}{internal_id}", headers=header)
         response.raise_for_status()
         return response.json()
-    except requests.exceptions.RequestException:
-        raise TomticketApiError(f"Erro ao obter os dados do cliente {internal_id}.")
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 404:
+            raise TicketNotFountError(f"Customer '{internal_id}' nao encontrado.")
+        else:
+            raise TomticketApiError(f"Erro inesperado: {e.response.status_code}")
