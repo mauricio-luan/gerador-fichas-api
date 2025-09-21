@@ -13,7 +13,7 @@ def get_ticket(url, id_ticket, header):
         return response.json()
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 404:
-            raise TicketNotFountError(f"Ticket '{id_ticket}' nao encontrado.")
+            raise TicketNotFountError(f"Ticket '{id_ticket}' inválido.")
         elif e.response.status_code == 401:
             raise AuthenticationError("Token de autenticacao invalido.")
         else:

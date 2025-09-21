@@ -23,6 +23,7 @@ __status__ = "Development"
 import io
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from app.schemas.Ficha import InputUsuario
 from app.core.gera_xlsx import gera_planilha
 from app.core.logic import gera_ficha
@@ -38,6 +39,21 @@ app = FastAPI(
     version=__version__,
 )
 
+origins = [
+    "http://localhost:3000",  # A origem do seu frontend Vue em desenvolvimento
+    # "https://seu-site.vercel.app", # A URL do seu site em produção no futuro
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # lista de origens que podem fazer requisições
+    allow_credentials=True,
+    allow_methods=["POST", "GET"],
+    allow_headers=["*"],
+    # precisei forçar esse header pra receber o nome do arquivo no front
+    expose_headers=["Content-Disposition"],
+)
+
 
 @app.get("/")
 def raiz():
@@ -45,7 +61,7 @@ def raiz():
     return {"mensagem": mensagem}
 
 
-@app.post("/fichas/")
+@app.post("/fichas")
 def cria_ficha(input_usuario: InputUsuario):
     try:
         ficha = gera_ficha(input_usuario)
