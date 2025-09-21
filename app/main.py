@@ -40,8 +40,8 @@ app = FastAPI(
 )
 
 origins = [
-    "http://localhost:3000",  # A origem do seu frontend Vue em desenvolvimento
-    # "https://seu-site.vercel.app", # A URL do seu site em produção no futuro
+    "http://localhost:3000",
+    "https://gerador-fichas-ui.vercel.app",
 ]
 
 app.add_middleware(
